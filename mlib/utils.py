@@ -72,3 +72,16 @@ from typing import Set
 def all_subclasses(cls) -> Set[object]:
     '''Returns all imported subclasses for provided class'''
     return set(cls.__subclasses__()).union([s for c in cls.__subclasses__() for s in all_subclasses(c)])
+
+def bitflag(flags: int, flag: int) -> bool:
+    return flags & flag == flag
+
+def remove_None(d):
+    for k, a in d.copy().items():
+        if a is None:
+            d.pop(k, None)
+        elif type(a) is dict:
+            d[k] = remove_None(a)
+        elif type(a) is list:
+            d[k] = [remove_None(i) if type(i) is dict else i for i in a]
+    return d
