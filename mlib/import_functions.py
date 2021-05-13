@@ -7,4 +7,5 @@ def import_from(dirname: str):
         if full_package_name not in sys.modules:
             importlib.import_module(full_package_name)
     f = time.time()
-    print("Loaded in:", f - t)
+    from .logger import log
+    log.info("Loaded in %s", f-t)
