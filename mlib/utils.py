@@ -73,10 +73,21 @@ def all_subclasses(cls) -> Set[object]:
     '''Returns all imported subclasses for provided class'''
     return set(cls.__subclasses__()).union([s for c in cls.__subclasses__() for s in all_subclasses(c)])
 
+def percent_of(value: float, percentage: float) -> float:
+    return value * (percentage / 100)
+
+def deduce_percentage(value: float, percentage: float) -> float:
+    return value - percent_of(value, percentage)
+
 def bitflag(flags: int, flag: int) -> bool:
     return flags & flag == flag
 
 def remove_None(d):
+    if type(d) is list:
+        _d = []
+        for _i in d:
+            _d.append(remove_None(_i))
+        return _d
     for k, a in d.copy().items():
         if a is None:
             d.pop(k, None)
