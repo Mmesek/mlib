@@ -82,6 +82,12 @@ def deduce_percentage(value: float, percentage: float) -> float:
 def bitflag(flags: int, flag: int) -> bool:
     return flags & flag == flag
 
+def set_bit(result: int, value: int) -> int:
+    return result | value
+
+def clear_bit(result: int, value: int) -> int:
+    return result & ~value
+
 def remove_None(d):
     if type(d) is list:
         _d = []
@@ -96,3 +102,24 @@ def remove_None(d):
         elif type(a) is list:
             d[k] = [remove_None(i) if type(i) is dict else i for i in a]
     return d
+
+def cap(word: str):
+    '''CapitalizedRestINTACT'''
+    if word == '':
+        return word
+    return word[0].upper() + word[1:]
+
+def title_preserving_caps(string, whitespace=' '):
+    '''Title PRESERVING CaPS'''
+    return whitespace.join(map(cap, string.split(whitespace)))
+
+def cc2jl(my_str):
+  """CamelCase to joint_lower"""
+
+  r = my_str[0].lower()
+  for i, letter in enumerate(my_str[1:], 1):
+    if letter.isupper():
+      if my_str[i-1].islower() or (i != len(my_str)-1 and my_str[i+1].islower()):
+        r += '_'
+    r += letter.lower()
+  return r
