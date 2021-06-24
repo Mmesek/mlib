@@ -21,3 +21,20 @@ def load_csv(filename) -> List:
             rows.append(row)
             #yield row
     return rows
+
+def check_if_exists(_dir):
+    from os.path import exists
+    from os import makedirs
+    if exists(_dir) is False:
+        print("Creating directory:", _dir)
+        makedirs(_dir)
+        return True
+    return False
+
+def listFiles(path, include_directory=False):
+    import glob
+    files = glob.glob(f'{path}/**/*', recursive=True)
+    if include_directory:
+        return [i.replace(path, '') for i in files]
+    else:
+        return [i.replace('\\', '/').split('/')[-1].split('.')[0] for i in files]
