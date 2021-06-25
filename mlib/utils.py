@@ -123,3 +123,16 @@ def cc2jl(my_str):
         r += '_'
     r += letter.lower()
   return r
+
+def cc2jp(my_str):
+  """CamelCase to joint_lower_Preserving_Uppercase"""
+  my_str = str(my_str)
+
+  r = my_str[0]
+  for i, letter in enumerate(my_str[1:], 1):
+    if letter.isupper():
+      if my_str[i-1].islower() or (i != len(my_str)-1 and my_str[i+1].islower()):
+          if my_str[i-1] not in ['_','"',"'"] and my_str[i+1] not in ['_','"',"'"]:
+            r += '_'
+    r += letter
+  return r.strip('_')
