@@ -2,35 +2,37 @@ from sqlalchemy import Column, TIMESTAMP, Integer, String, func
 from sqlalchemy.orm import declarative_base, declared_attr, Query
 from sqlalchemy.orm.session import Session
 from sqlalchemy.engine.base import Engine
+import datetime
 
-from typing import List
+from typing import List, TypeVar, Type
+T = TypeVar('T', bound='Base')
 
 class Base:
     @declared_attr
     def __tablename__(cls):
         return cls.__name__  #.lower()
     @classmethod
-    def filter(cls, session, **kwargs) -> Query:
-        ''':param kwargs: Column = Value''' 
+    def filter(cls: Type[T], session: Session, **kwargs) -> Query:
+        ''':param kwargs: Column = Value'''
         return session.query(cls).filter_by(**kwargs)
     @classmethod
-    def fetch_or_add(cls, s, **kwargs) -> object:
+    def fetch_or_add(cls: Type[T], s: Session, **kwargs) -> T:
         m = cls.filter(s, **kwargs).first()
         if not m:
             m = cls(**kwargs)
             s.add(m)
         return m
     @classmethod
-    def fetch_or_add_multiple(cls, s, *ids: int) -> List[object]:
+    def fetch_or_add_multiple(cls: Type[T], s: Session, *ids: int) -> List[T]:
         objects = []
         for id in ids:
             objects.append(cls.fetch_or_add(s, id=id))
         return objects
     @classmethod
-    def by_id(cls, s, id: int) -> object:
+    def by_id(cls: Type[T], s: Session, id: int) -> T:
         return cls.filter(s, id = id).first()
     @classmethod
-    def by_name(cls, s, name: str) -> object:
+    def by_name(cls: Type[T], s: Session, name: str) -> T:
         return cls.filter(s, name = name).first()
 #    def __repr__(self) -> str:
 #        return "{}({})".format(
@@ -45,21 +47,21 @@ Base = declarative_base(cls=Base)
 #Meta = MetaData()
 
 class ID:
-    id = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
+    id: int = Column(Integer, primary_key=True, autoincrement=True, nullable=False)
 
 class Default(ID):
-    name = Column(String, unique=True, nullable=False)
+    name: str = Column(String, unique=True, nullable=False)
     def __init__(self, name) -> None:
         self.name = name
 
 class File(ID):
-    filename = Column(String)
+    filename: str = Column(String)
 
 class Timestamp:
-    timestamp = Column(TIMESTAMP(timezone=True), server_default=func.now())
+    timestamp: datetime.datetime = Column(TIMESTAMP(timezone=True), server_default=func.now())
 
 class TimestampUpdate:
-    timestamp = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
+    timestamp: datetime.datetime = Column(TIMESTAMP(timezone=True), server_default=func.now(), onupdate=func.now())
 
 
 def extend_enums(session: Session, engine: Engine, module):
@@ -101,6 +103,9 @@ class SQL:
             log.exception("Connecting to Remote DB failed! Falling back to local SQLite", exc_info=ex)
             self.engine = create_engine(f"sqlite:///{name}.db", echo=echo, future=True)
         self.session = sessionmaker(bind=self.engine, future=True)
+    @property
+    def Session(self):
+        return self.session
     def create_tables(self):
         Base.metadata.create_all(self.engine)
     def drop_tables(self):
