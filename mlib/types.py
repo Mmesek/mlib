@@ -25,6 +25,10 @@ class Enum(Enum):
         return self.value > other.value
     def __ge__(self, other):
         return self.value >= other.value
+    
+    @property
+    def annotation(cls):
+        return cls.__annotations__.get(cls.name, None)
 
 async def aInvalid(*args, **kwargs):
     pass
