@@ -8,4 +8,4 @@ def import_from(dirname: str):
             importlib.import_module(full_package_name)
     f = time.time()
     from .logger import log
-    log.info("Loaded in %s", f-t)
+    log.info("%s Loaded in %s", dirname, f-t)
