@@ -18,7 +18,8 @@ def ConfigToDict(config_path):
                     value = config.getboolean(section, option)
                 dictonary[section][option] = value
             except Exception as ex:
-                print("Exception while reading from config file: ", ex)
+                from mlib.logger import log
+                log.exception("Exception while reading from config file: ", exc_info=ex)
                 dictonary[section][option] = None
     return dictonary
 
@@ -27,5 +28,6 @@ def GenerateConfig(config_path):
     config.read_dict({})
     with open(config_path, 'w') as file:
         config.write(file)
-    print('Generated config file, edit it and restart')
+    from mlib.logger import log
+    log.exception(f'Generated config file at {config_path}, edit it and restart')
     exit()
