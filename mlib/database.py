@@ -93,16 +93,21 @@ class SQL:
     __slots__ = ('engine', 'session')
     engine: Engine
     session: Session
-    def __init__(self, db='postgresql', user='postgres', password='postgres', location='192.168.1.5', port=5432, name='beta', echo=True):
-        from sqlalchemy import create_engine
+    def __init__(self, db='postgresql', user='postgres', password='postgres', location=None, port=5432, name='bot', echo=True):
         from sqlalchemy.orm import sessionmaker
-        try:
-            self.engine = create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', client_encoding='utf8', echo=echo, future=True)
-        except Exception as ex:
-            from .logger import log
-            log.exception("Connecting to Remote DB failed! Falling back to local SQLite", exc_info=ex)
-            self.engine = create_engine(f"sqlite:///{name}.db", echo=echo, future=True)
+        if location:
+            try:
+                self._create_engine(f'{db}://{user}:{password}@{location}:{port}/{name}', echo=echo, client_encoding='utf8')
+            except Exception as ex:
+                from .logger import log
+                log.exception("Connecting to Remote DB failed! Falling back to local SQLite", exc_info=ex)
+                self._create_engine(f"sqlite:///{name}.db", echo=echo)
+        else:
+            self._create_engine(f"sqlite:///{name}.db", echo=echo)
         self.session = sessionmaker(bind=self.engine, future=True)
+    def _create_engine(self, url: str, echo: bool=True, **kwargs):
+        from sqlalchemy import create_engine
+        self.engine = create_engine(url, echo=echo, future=True, **kwargs)
     @property
     def Session(self):
         return self.session
