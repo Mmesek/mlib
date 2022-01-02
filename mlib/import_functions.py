@@ -1,17 +1,21 @@
 def import_from(dirname: str):
     """Recursively imports modules from specified directory"""
     import importlib, time, pkgutil, sys, os
+    from platform import python_version_tuple as ver
+    from .logger import log
     t = time.time()
-    dirname = [dirname]+[os.path.join(dirname,o) for o in os.listdir(dirname) if os.path.isdir(os.path.join(dirname, o)) and '__' not in o]
+    all_dirnames = [dirname]+[os.path.join(dirname,o) for o in os.listdir(dirname) if os.path.isdir(os.path.join(dirname, o)) and '__' not in o]
     times = set()
-    for importer, package_name, _ in pkgutil.iter_modules(dirname):
+    for importer, package_name, _ in pkgutil.iter_modules(all_dirnames):
         _t = time.time_ns()
         full_package_name = '.'.join([importer.path.replace('\\','.').replace('/','.'), package_name])
+        if int(ver()[1]) >= 10:
+            full_package_name = full_package_name.split(dirname,1)[-1][1:]
         if full_package_name not in sys.modules:
             importlib.import_module(full_package_name)
+            log.debug("Imported %s", full_package_name)
         times.add((package_name, time.time_ns()-_t))
     f = time.time()
-    from .logger import log
     longest = len(max(times, key=lambda x: len(x[0]))[0])
     times = sorted(times, key=lambda x: x[1], reverse=True)
     log.log(1, "Times in ns:\n%s", "\n".join("{:-<{longest}}-{}".format(i[0], i[1], longest=longest) for i in times))
@@ -31,6 +35,7 @@ def import_modules(dirname: str):
         full_package_name = '.'.join([dirname.replace('\\','.').replace('/','.'), package_name])
         if full_package_name not in sys.modules:
             importlib.import_module(full_package_name)
+            log.debug("Imported %s", full_package_name)
         times.add((package_name, time.time_ns()-_t))
     f = time.time()
     longest = len(max(times, key=lambda x: len(x[0]))[0])
