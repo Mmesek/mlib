@@ -1,12 +1,12 @@
 import configparser
 
-def ConfigToDict(config_path):
+def ConfigToDict(config_path, default: dict = {}):
     dictonary = {}
     config = configparser.ConfigParser()
     config.read(config_path)
     sections = config.sections()
     if sections == []:
-        return GenerateConfig(config_path)
+        return GenerateConfig(config_path, default)
     for section in sections:
         dictonary[section] = {}
         for option in config.options(section):
@@ -23,9 +23,9 @@ def ConfigToDict(config_path):
                 dictonary[section][option] = None
     return dictonary
 
-def GenerateConfig(config_path):
+def GenerateConfig(config_path, default: dict = {}):
     config = configparser.ConfigParser()
-    config.read_dict({})
+    config.read_dict(default)
     with open(config_path, 'w') as file:
         config.write(file)
     from mlib.logger import log
