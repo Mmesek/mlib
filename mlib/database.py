@@ -130,3 +130,8 @@ class SQL:
         return self.add(mapping)
     def extend_enums(self, module):
         return extend_enums(self.session, self.engine, module)
+
+from .rest_client import Client
+class Supabase(Client):
+    async def rpc(self, func: str, method: str = "POST", **kwargs):
+        return await self.api_call(path="rest/v1/rpc/"+func, method=method, **kwargs)
