@@ -6,11 +6,10 @@ def import_from(dirname: str):
     t = time.time()
     all_dirnames = [dirname]+[os.path.join(dirname,o) for o in os.listdir(dirname) if os.path.isdir(os.path.join(dirname, o)) and '__' not in o]
     times = set()
+    path = os.getcwd().replace('\\','/')
     for importer, package_name, _ in pkgutil.iter_modules(all_dirnames):
         _t = time.time_ns()
-        full_package_name = '.'.join([importer.path.replace('\\','.').replace('/','.'), package_name])
-        if int(ver()[1]) >= 10:
-            full_package_name = full_package_name.split(dirname,1)[-1][1:]
+        full_package_name = '.'.join([importer.path.replace('\\','/').replace(path + "/", "").replace('/','.'), package_name])
         if full_package_name not in sys.modules:
             importlib.import_module(full_package_name)
             log.debug("Imported %s", full_package_name)
