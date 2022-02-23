@@ -15,9 +15,10 @@ def import_from(dirname: str):
             log.debug("Imported %s", full_package_name)
         times.add((package_name, time.time_ns()-_t))
     f = time.time()
-    longest = len(max(times, key=lambda x: len(x[0]))[0])
-    times = sorted(times, key=lambda x: x[1], reverse=True)
-    log.log(1, "Times in ns:\n%s", "\n".join("{:-<{longest}}-{}".format(i[0], i[1], longest=longest) for i in times))
+    if times:
+        longest = len(max(times, key=lambda x: len(x[0]))[0])
+        times = sorted(times, key=lambda x: x[1], reverse=True)
+        log.log(1, "Times in ns:\n%s", "\n".join("{:-<{longest}}-{}".format(i[0], i[1], longest=longest) for i in times))
     log.info("%s Loaded in %s", dirname, f-t)
 
 def import_modules(dirname: str):
@@ -37,7 +38,8 @@ def import_modules(dirname: str):
             log.debug("Imported %s", full_package_name)
         times.add((package_name, time.time_ns()-_t))
     f = time.time()
-    longest = len(max(times, key=lambda x: len(x[0]))[0])
-    times = sorted(times, key=lambda x: x[1], reverse=True)
-    log.log(1, "Times in ns:\n%s", "\n".join("{:-<{longest}}-{}".format(i[0], i[1], longest=longest) for i in times))
+    if times:
+        longest = len(max(times, key=lambda x: len(x[0]))[0])
+        times = sorted(times, key=lambda x: x[1], reverse=True)
+        log.log(1, "Times in ns:\n%s", "\n".join("{:-<{longest}}-{}".format(i[0], i[1], longest=longest) for i in times))
     log.info("%s Loaded in %s", dirname, f-t)
