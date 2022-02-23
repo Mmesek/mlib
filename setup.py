@@ -3,9 +3,6 @@ import setuptools
 with open("README.md", "r", encoding="utf-8") as fh:
     long_description = fh.read()
 
-with open('requirements.txt') as f:
-    requirements = [i.strip() for i in f.readlines()]
-
 setuptools.setup(
     name="mLib",
     version="1.0.0",
@@ -21,7 +18,6 @@ setuptools.setup(
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
     ],
-    install_requires=requirements,
     package_dir={"": "mlib"},
     packages=setuptools.find_packages(where="mlib"),
     python_requires=">=3.7",
