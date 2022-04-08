@@ -136,3 +136,31 @@ def cc2jp(my_str):
             r += '_'
     r += letter
   return r.strip('_')
+
+def to_snake(my_str: str) -> str:
+    """String to snake_case"""
+    return my_str.replace(" ","_").replace("-","_").lower()
+
+def to_camel(my_str: str, default_separator: str="_") -> str:
+    """snake_case (or any other by changing default separator) to CamelCase"""
+    return "".join(i.title() for i in my_str.split(default_separator))
+
+def try_quote(my_str: str) -> int | str:
+    """Attempts to surround input with " unless it's a number in which case it returns integer value"""
+    if my_str.startswith('"') and my_str.endswith('"'):
+        return my_str
+    elif my_str.startswith("'") and my_str.endswith("'"):
+        my_str[0] = '"'
+        my_str[-1] = '"'
+        return my_str
+    try:
+        return int(my_str)
+    except ValueError:
+        try:
+            return int(my_str, 16)
+        except ValueError:
+            return f'"{my_str}"'
+
+def unquote(my_str: str) -> str:
+    """Removes surrounding quotes (" or ')"""
+    return my_str.replace('"',"").replace("'","")
