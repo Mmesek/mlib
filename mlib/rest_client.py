@@ -14,6 +14,6 @@ class Client:
                     r.raise_for_status()
                     return await r.json()
                 except Exception as ex:
-                    from .. import log
+                    from .logger import log
                     log.exception(r.content._buffer)
                     return 0
