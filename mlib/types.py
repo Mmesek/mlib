@@ -35,3 +35,24 @@ async def aInvalid(*args, **kwargs):
 
 def Invalid(*args, **kwargs):
     pass
+
+MAGIC_NUMBERS = {
+    "apng": (b"acTL", b"IDAT"),
+    "png": b"PNG",
+    "gif": b"GIF",
+    "jpeg": [0xFF, 0xD8, 0xFF, 0xE0],
+    "jpeg2": [0xFF, 0xD8, 0xFF, 0xE1],
+    "jpg": [0xFF, 0xD8],
+    "bmp": b"BM",
+    "tiff": [0x49, 0x49, 0x2A],
+    "tiff2": [0x4D, 0x4D, 0x2A],
+}
+
+
+def detect_filetype(bytes_to_check: bytes):
+    for k, v in MAGIC_NUMBERS.items():
+        if type(v) is tuple:
+            if all(_ in bytes_to_check for _ in [bytearray(i) for i in v]):
+                return k
+        elif bytearray(v) in bytes_to_check:
+            return k
