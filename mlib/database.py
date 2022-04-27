@@ -93,13 +93,13 @@ class SQL:
     __slots__ = ('engine', 'session')
     engine: Engine
     session: Session
-    def __init__(self, db='postgresql', user='postgres', password='postgres', location=None, port=5432, name='bot', echo=True, *, url: str = None):
+    def __init__(self, db='postgresql', user='postgres', password='postgres', location=None, port=5432, name='bot', echo=True, *, url: str = None, **kwargs):
         from sqlalchemy.orm import sessionmaker
         if location or url:
             try:
                 if not url:
                     url = f'{db}://{user}:{password}@{location}:{port}/{name}'
-                self._create_engine(url, echo=echo, client_encoding='utf8')
+                self._create_engine(url, echo=echo, **kwargs)
             except Exception as ex:
                 from .logger import log
                 log.exception("Connecting to Remote DB failed! Falling back to local SQLite", exc_info=ex)
