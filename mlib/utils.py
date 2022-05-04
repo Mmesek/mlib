@@ -11,7 +11,7 @@ def timed(func):
         return result
     return inner
 
-def replaceMultiple(mainString: str, toBeReplaces: list, newString: str) -> str:
+def replace_multiple(mainString: str, toBeReplaces: list, newString: str) -> str:
     # Iterate over the strings to be replaced
     for elem in toBeReplaces:
         # Check if string is in the main string
@@ -20,6 +20,8 @@ def replaceMultiple(mainString: str, toBeReplaces: list, newString: str) -> str:
             mainString = mainString.replace(elem, newString)
 
     return mainString
+
+replaceMultiple = replace_multiple
 
 def truncate(n: int, decimals: int=0):
     m = 10**decimals
@@ -137,13 +139,32 @@ def cc2jp(my_str):
     r += letter
   return r.strip('_')
 
+from .types import Enum
+class Case_Separators(Enum):
+    Camel = ""
+    Snake = "_"
+    Kebab = "-"
+
+    def to(cls, my_str: str):
+        return to_case(my_str, cls.value)
+
+
+def to_case(my_str: str, separator: str) -> str:
+    """String to-any_case"""
+    return my_str.replace(" ", separator).replace("-", separator).replace("_", separator)
+
 def to_snake(my_str: str) -> str:
     """String to snake_case"""
     return my_str.replace(" ","_").replace("-","_").lower()
 
+def to_kebab(my_str: str) -> str:
+    """String to kebab-case"""
+    return my_str.replace(" ", "-").replace("_", "-").lower()
+
 def to_camel(my_str: str, default_separator: str="_") -> str:
     """snake_case (or any other by changing default separator) to CamelCase"""
     return "".join(i.title() for i in my_str.split(default_separator))
+
 
 def try_quote(my_str: str) -> int | str:
     """Attempts to surround input with " unless it's a number in which case it returns integer value"""
@@ -157,10 +178,20 @@ def try_quote(my_str: str) -> int | str:
         return int(my_str)
     except ValueError:
         try:
-            return int(my_str, 16)
+            int(my_str, 16)
+            if "x" not in my_str[:2]:
+                raise ValueError
+            return my_str
         except ValueError:
             return f'"{my_str}"'
 
 def unquote(my_str: str) -> str:
     """Removes surrounding quotes (" or ')"""
-    return my_str.replace('"',"").replace("'","")
+    return my_str.replace('"',"").replace("'","").replace('`', '')
+
+import re
+
+NOT_WORD_OR_DIGIT = re.compile("\W|^(?=\d)")
+def clean(my_str) -> str:
+    """Replaces any non word characters or digits with underscore"""
+    return NOT_WORD_OR_DIGIT.sub("_", my_str)
