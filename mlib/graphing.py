@@ -3,6 +3,19 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
 
+
+def choose_locator(locator: str, interval: int):
+    locator = locator.lower()
+    if locator == "day":
+        return mdates.DayLocator(interval=interval)
+    if locator == "week":
+        return mdates.WeekdayLocator(interval=int(interval))
+    elif locator == "month":
+        return mdates.MonthLocator(interval=int(interval))
+    elif locator == "year":
+        return mdates.YearLocator()
+
+
 def set_locator(ax, locator, interval):
     '''
     Locator: minute, hour, day, week, month or year
