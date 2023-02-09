@@ -11,8 +11,12 @@ def import_from(dirname: str):
         _t = time.time_ns()
         full_package_name = '.'.join([importer.path.replace('\\','/').replace(path + "/", "").replace('/','.'), package_name])
         if full_package_name not in sys.modules:
-            importlib.import_module(full_package_name)
-            log.debug("Imported %s", full_package_name)
+            try:
+                importlib.import_module(full_package_name)
+            except:
+                log.warn("Couldn't import %s", full_package_name)
+            else:
+                log.debug("Imported %s", full_package_name)
         times.add((package_name, time.time_ns()-_t))
     f = time.time()
     if times:
