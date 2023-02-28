@@ -137,13 +137,13 @@ class SQL:
         """Creates new session"""
         return self._session()
 
-    def create_tables(self):
+    def create_tables(self, base: Base = Base):
         """Creates tables synchronously"""
-        Base.metadata.create_all(self._engine)
+        base.metadata.create_all(self._engine)
 
-    def drop_tables(self):
+    def drop_tables(self, base: Base = Base):
         """Drops tables synchronously"""
-        Base.metadata.drop_all(self._engine)
+        base.metadata.drop_all(self._engine)
 
     def extend_enums(self, module):
         return extend_enums(self.session(), self.engine, module)
@@ -160,12 +160,12 @@ class AsyncSQL(SQL):
         """Creates asynchronous session factory"""
         self._session = async_sessionmaker(bind=self._engine)
 
-    async def create_tables(self):
+    async def create_tables(self, base: Base = Base):
         """Creates tables asynchronously. To be used with await"""
         async with self._engine.begin() as conn:
-            await conn.run_sync(Base.metadata.create_all)
+            await conn.run_sync(base.metadata.create_all)
 
-    async def drop_tables(self):
+    async def drop_tables(self, base: Base = Base):
         """Drops tables asynchronously. To be used with await"""
         async with self._engine.begin() as conn:
-            await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(base.metadata.drop_all)
