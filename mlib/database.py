@@ -14,6 +14,16 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
         return cls.__name__
 
 
+
+class MappedWrapper:
+    def __init_subclass__(cls, **kwargs) -> None:
+        for annotation, _type in cls.__annotations__.items():
+            if get_origin(_type) is not orm.Mapped:
+                cls.__annotations__[annotation] = orm.Mapped[_type]
+
+        return super().__init_subclass__(**kwargs)
+
+
 auto_int_pk = Annotated[int, orm.mapped_column(primary_key=True, autoincrement=True)]
 unique_name = Annotated[str, orm.mapped_column(sa.String, unique=True, nullable=False)]
 
