@@ -36,31 +36,31 @@ ts_update = Annotated[
 class ID:
     """Mixin adding autoincrementing integer ID"""
 
-    id: auto_int_pk
+    id: orm.Mapped[auto_int_pk]
 
 
 class Default(ID):
     """Mixin adding unique name with ID"""
 
-    name: unique_name
+    name: orm.Mapped[unique_name]
 
 
 class File(ID):
     """Mixin adding filename with ID"""
 
-    filename: str
+    filename: orm.Mapped[str]
 
 
 class Timestamp:
     """Mixin adding server default timestamp with timezone (if empty)"""
 
-    timestamp: ts_default
+    timestamp: orm.Mapped[ts_default]
 
 
 class TimestampUpdate:
     """Mixin adding timestamp that updates on update with server default with timezone (if empty"""
 
-    timestamp: ts_update
+    timestamp: orm.Mapped[ts_update]
 
 
 def extend_enums(session: orm.Session, engine: Engine, module):
