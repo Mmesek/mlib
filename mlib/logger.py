@@ -11,8 +11,13 @@ class ColorCodes:
     purple = "\x1b[1;35m"
     reset = "\x1b[0m"
 
+logging.addLevelName(1, "BENCHMARK")
+logging.addLevelName(5, "TRACE")
+
 class Formatter(logging.Formatter):
     _colors = {
+        1: ColorCodes.light_blue,
+        5: ColorCodes.purple,
         logging.DEBUG: ColorCodes.green,
         logging.INFO: ColorCodes.blue,
         logging.WARN: ColorCodes.red,
@@ -24,7 +29,6 @@ class Formatter(logging.Formatter):
         record.levelname = wrap(record.levelname, self._colors.get(record.levelno, ColorCodes.purple))
         return super().format(record)
 
-logging.addLevelName(1, "BENCHMARK")
 hndr = logging.StreamHandler()
 hndr.setFormatter(Formatter(fmt="[%(asctime)s] [%(name)10s] [%(levelname)16s] [%(lineno)-4d%(module)8s] %(message)s", datefmt="%m/%d %H:%M:%S"))
 logging.basicConfig(format="[%(asctime)s] [%(name)10s] [%(levelname)8s] [%(lineno)-4d%(module)8s] %(message)s", datefmt="%m/%d %H:%M:%S", handlers=[hndr])
