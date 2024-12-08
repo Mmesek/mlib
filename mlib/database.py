@@ -1,12 +1,16 @@
 import enum
 from datetime import datetime
 from inspect import isclass
-from typing import Annotated, TypeVar, Type, get_args, get_origin
+from typing import Annotated, Type, TypeVar, get_args, get_origin
 
 import sqlalchemy as sa
-from sqlalchemy import orm, select, Select
+from sqlalchemy import Select, orm, select
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.sql.sqltypes import _type_map as SQL_TYPES
+
+from .logger import log
+
 T = TypeVar("T", bound=Type["Base"])
 V = TypeVar("V")
 
@@ -89,15 +93,13 @@ class TimestampUpdate(orm.MappedAsDataclass):
 
 def extend_enums(session: orm.Session, engine: Engine, module):
     """Extends existing DB Enum with new values from Coded Enum"""
-    import enum
-    from inspect import isclass
-
     with session.begin() as s:
         for _class in vars(module).values():
             if isclass(_class) and issubclass(_class, enum.Enum) and len(_class.__members__) > 0:
                 try:
                     r = s.query(sa.text("unnest(enum_range(NULL::{}))".format(_class.__name__.lower()))).all()
                 except Exception as ex:
+                    log.warning("Unnesting enum %s failed", _class.__name__, exc_info=ex)
                     continue
                 r = [j for i in r for j in i]
                 new_members = []
@@ -106,8 +108,6 @@ def extend_enums(session: orm.Session, engine: Engine, module):
                         new_members.append(member)
                 if new_members != []:
                     with engine.connect() as con:
-                        from .logger import log
-
                         for member in new_members:
                             log.info("Extending %s with value %s", _class.__name__, member)
                             con.execute(sa.text("ALTER TYPE {} ADD VALUE '{}'".format(_class.__name__.lower(), member)))
@@ -134,8 +134,6 @@ class SQL:
             url = url or self.build_url(name, db, user, password, location, port)
             self._create_engine(url, echo=echo, **kwargs)
         except ConnectionError as ex:
-            from .logger import log
-
             log.exception("Connecting to Remote DB failed! Falling back to local SQLite", exc_info=ex)
             self._create_engine(self.build_url + ".db", echo=echo)
         self._create_sessionmaker()
