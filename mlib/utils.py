@@ -81,6 +81,9 @@ def percent_of(value: float, percentage: float) -> float:
 def deduce_percentage(value: float, percentage: float) -> float:
     return value - percent_of(value, percentage)
 
+def percent_from(value: float, total: float) -> float:
+    return (value / total) * 100
+
 def bitflag(flags: int, flag: int) -> bool:
     return flags & flag == flag
 
