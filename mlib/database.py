@@ -39,8 +39,24 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
 
     @classmethod
     async def filter(cls: T, session: ASession, *args, **kwargs) -> list[T]:
+        """:param kwargs: Column = Value"""
         result = await session.scalars(select(cls).filter(*args).filter_by(**kwargs))
         return result.all()
+
+    @classmethod
+    async def fetch_or_add_multiple(cls: T, session: ASession, *ids: int) -> list[T]:
+        objects = []
+        for id in ids:
+            objects.append(await cls.fetch_or_add(session, id=id))
+        return objects
+
+    @classmethod
+    async def by_id(cls: T, session: ASession, id: int) -> T | None:
+        return await session.scalar(select(cls).filter_by(id=id))
+
+    @classmethod
+    async def by_name(cls: T, session: ASession, name: str) -> T | None:
+        return await session.scalar(select(cls).filter_by(name=name))
 
 
 class MappedWrapper:
