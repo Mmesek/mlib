@@ -26,6 +26,17 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
     def __tablename__(cls):
         return cls.__name__
 
+    @classmethod
+    async def fetch_or_add(cls: T, session: ASession, **kwargs) -> T:
+        """Fetch from database or create new object"""
+        if row := await session.scalar(select(cls).filter_by(**kwargs)):
+            return row
+        return cls(**kwargs)
+
+    @classmethod
+    async def filter(cls: T, session: ASession, *args, **kwargs) -> list[T]:
+        result = await session.scalars(select(cls).filter(*args).filter_by(**kwargs))
+        return result.all()
 
 
 class MappedWrapper:
