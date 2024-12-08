@@ -198,3 +198,10 @@ NOT_WORD_OR_DIGIT = re.compile("\W|^(?=\d)")
 def clean(my_str) -> str:
     """Replaces any non word characters or digits with underscore"""
     return NOT_WORD_OR_DIGIT.sub("_", my_str)
+
+class Toggle:
+    def __init__(self) -> None:
+        self._toggle = False
+
+    def toggle(self):
+        self._toggle = not self._toggle
