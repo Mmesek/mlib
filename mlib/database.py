@@ -136,9 +136,9 @@ class TimestampUpdate(orm.MappedAsDataclass):
     timestamp: orm.Mapped[ts_update] = orm.mapped_column(kw_only=True, default=None)
 
 
-def extend_enums(session: orm.Session, engine: Engine, module):
+async def extend_enums(session: ASession, engine: Engine, module):
     """Extends existing DB Enum with new values from Coded Enum"""
-    with session.begin() as s:
+    async with session.begin() as s:
         for _class in vars(module).values():
             if isclass(_class) and issubclass(_class, enum.Enum) and len(_class.__members__) > 0:
                 try:
@@ -222,8 +222,25 @@ class SQL:
         """Drops tables synchronously"""
         base.metadata.drop_all(self._engine)
 
+    def merge(self, mapping: T):
+        with self.session.begin() as s:
+            s.merge(mapping)
+
+    def add(self, mapping: T):
+        with self.session.begin() as s:
+            s.add(mapping)
+
+    def delete(self, mapping: T):
+        with self.session.begin() as s:
+            s.delete(mapping)
+
+    def merge_or_add(self, queried_result: T, mapping: T):
+        if queried_result:
+            return self.merge(mapping)
+        return self.add(mapping)
+
     def extend_enums(self, module):
-        return extend_enums(self.session(), self.engine, module)
+        return extend_enums(self.session(), self._engine, module)
 
 
 class AsyncSQL(SQL):
@@ -246,3 +263,23 @@ class AsyncSQL(SQL):
         """Drops tables asynchronously. To be used with await"""
         async with self._engine.begin() as conn:
             await conn.run_sync(base.metadata.drop_all)
+
+    async def merge(self, mapping: T):
+        async with self.session.begin() as s:
+            s.merge(mapping)
+
+    async def add(self, mapping: T):
+        async with self.session.begin() as s:
+            s.add(mapping)
+
+    async def delete(self, mapping: T):
+        async with self.session.begin() as s:
+            s.delete(mapping)
+
+    async def merge_or_add(self, queried_result: T | None, mapping: T):
+        if queried_result:
+            return await self.merge(mapping)
+        return await self.add(mapping)
+
+    async def extend_enums(self, session: ASession, module):
+        return await extend_enums(session, self._engine, module)
