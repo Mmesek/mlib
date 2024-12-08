@@ -1,11 +1,24 @@
+import enum
 from datetime import datetime
-from typing import Annotated
+from inspect import isclass
+from typing import Annotated, TypeVar, Type, get_args, get_origin
 
 import sqlalchemy as sa
-
-from sqlalchemy import orm
-from sqlalchemy.ext.asyncio import create_async_engine, async_sessionmaker
+from sqlalchemy import orm, select, Select
 from sqlalchemy.engine import Engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+T = TypeVar("T", bound=Type["Base"])
+V = TypeVar("V")
+
+
+class ASession(AsyncSession):
+    async def query(self, statement: Select[V], index: int = 0, **kwargs) -> V:
+        r = await self.execute(statement, **kwargs)
+        return r.scalars(index).all()
+
+    async def first(self, statement: Select[V], **kwargs) -> V:
+        r = await self.execute(statement, **kwargs)
+        return r.scalar()
 
 
 class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
@@ -168,7 +181,7 @@ class AsyncSQL(SQL):
 
     def _create_sessionmaker(self):
         """Creates asynchronous session factory"""
-        self._session = async_sessionmaker(bind=self._engine)
+        self.session = async_sessionmaker(bind=self._engine, class_=ASession)
 
     async def create_tables(self, base: Base = Base):
         """Creates tables asynchronously. To be used with await"""
