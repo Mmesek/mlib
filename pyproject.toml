@@ -1,0 +1,59 @@
+[project]
+name = "mLib"
+version = "1"
+authors = [{ name = "Mmesek" }]
+description = "Utility functions"
+readme = "README.md"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]
+dynamic = ["dependencies"]
+requires-python = ">=3.10"
+
+[project.urls]
+"Homepage" = "https://github.com/Mmesek/mlib"
+"Bug Tracker" = "https://github.com/Mmesek/mlib/issues"
+"Source Code" = "https://github.com/Mmesek/mlib"
+
+[project.license]
+file = "LICENSE"
+
+[tool.pytest.ini_options]
+addopts = "--cov=mlib tests/"
+testpaths = ["mlib", "tests"]
+
+[tool.setuptools.dynamic.dependencies]
+file = "requirements.txt"
+
+[project.optional-dependencies]
+tests = ["pytest", "pytest-cov", "pytest-asyncio", "pytest-mock"]
+lint = ["ruff"]
+dev = ["mlib[tests,lint]", "pre-commit"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "if TYPE_CHECKING:"
+]
+
+[tool.ruff]
+line-length = 120
+src = ["mlib"]
+
+[tool.ruff.format]
+docstring-code-format = true
+line-ending = "lf"
+
+[tool.ruff.lint]
+ignore = [
+    "E401", # Multiple imports on one line
+    "F403", # Wildcard import
+    "F405", # Possibly undefined symbol or imported from wildcard
+]
+select = [
+    "I002",
+    "F"
+]
+fixable = ["ALL"]
+isort.combine-as-imports = true
+pydocstyle.convention = "numpy"
