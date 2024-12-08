@@ -52,6 +52,35 @@ class MappedWrapper:
         return super().__init_subclass__(**kwargs)
 
 
+class ImperativeTable:
+    def __init_subclass__(cls, schema: str = "public", **kwargs) -> None:
+        columns, nullable = [], False
+
+        for attribute, annotation in cls.__annotations__.items():
+            if base_types := get_args(annotation):
+                if type(None) in base_types:
+                    nullable = True
+                annotation = base_types[0]
+            value = cls.__dict__.get(attribute)
+            if type(value) is orm.MappedColumn:
+                columns.append(
+                    sa.Column(
+                        attribute,
+                        SQL_TYPES.get(annotation),
+                        nullable=nullable,
+                        primary_key=value.column.primary_key,
+                    )
+                )
+                cls.__delattr__(cls, attribute)
+            else:
+                columns.append(sa.Column(attribute, SQL_TYPES.get(annotation), nullable=nullable))
+
+        cls.__annotations__ = {}
+        cls.__table__ = sa.Table(cls.__tablename__, Base.metadata, schema=schema, *columns)
+
+        return super().__init_subclass__(**kwargs)
+
+
 auto_int_pk = Annotated[int, orm.mapped_column(primary_key=True, autoincrement=True)]
 unique_name = Annotated[str, orm.mapped_column(sa.String, unique=True, nullable=False)]
 
