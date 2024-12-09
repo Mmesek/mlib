@@ -6,6 +6,7 @@ description = "Utility functions"
 readme = "README.md"
 classifiers = [
     "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
 dynamic = ["dependencies"]
