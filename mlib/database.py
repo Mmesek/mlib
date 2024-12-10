@@ -5,11 +5,11 @@ from typing import Annotated, Type, TypeVar, get_args, get_origin
 
 import sqlalchemy as sa
 from sqlalchemy import Select, orm, select
+from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.engine import Engine
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
 from sqlalchemy.sql.sqltypes import _type_map as SQL_TYPES
-
-from .logger import log
+from mlib.logger import log
 
 T = TypeVar("T", bound=Type["Base"])
 V = TypeVar("V")
@@ -125,7 +125,7 @@ class Default(ID, orm.MappedAsDataclass):
 class File(ID, orm.MappedAsDataclass):
     """Mixin adding filename with ID"""
 
-    filename: orm.Mapped[str] = orm.mapped_column()
+    filename: orm.Mapped[str | None] = orm.mapped_column()
 
 
 class Timestamp(orm.MappedAsDataclass):
@@ -135,32 +135,38 @@ class Timestamp(orm.MappedAsDataclass):
 
 
 class TimestampUpdate(orm.MappedAsDataclass):
-    """Mixin adding timestamp that updates on update with server default with timezone (if empty"""
+    """Mixin adding timestamp that updates on update with server default with timezone (if empty)"""
 
     timestamp: orm.Mapped[ts_update] = orm.mapped_column(kw_only=True, default=None)
 
 
-async def extend_enums(session: ASession, engine: Engine, module):
+async def extend_enums(session: async_sessionmaker[ASession], engine: Engine, module):
     """Extends existing DB Enum with new values from Coded Enum"""
-    async with session.begin() as s:
-        for _class in vars(module).values():
-            if isclass(_class) and issubclass(_class, enum.Enum) and len(_class.__members__) > 0:
-                try:
-                    r = s.query(sa.text("unnest(enum_range(NULL::{}))".format(_class.__name__.lower()))).all()
-                except Exception as ex:
-                    log.warning("Unnesting enum %s failed", _class.__name__, exc_info=ex)
-                    continue
-                r = [j for i in r for j in i]
-                new_members = []
-                for member in _class.__members__.keys():
-                    if member not in r:
-                        new_members.append(member)
-                if new_members != []:
-                    with engine.connect() as con:
-                        for member in new_members:
-                            log.info("Extending %s with value %s", _class.__name__, member)
-                            con.execute(sa.text("ALTER TYPE {} ADD VALUE '{}'".format(_class.__name__.lower(), member)))
-                            con.commit()
+    s = session()
+    for _class in vars(module).values():
+        if isclass(_class) and issubclass(_class, enum.Enum) and len(_class.__members__) > 0:
+            try:
+                r = await s.execute(
+                    sa.text("SELECT * FROM unnest(enum_range(NULL::{}))".format(_class.__name__.lower()))
+                )
+                r = r.scalars().all()
+            except ProgrammingError as ex:
+                log.warning("Unnesting enum %s failed", _class.__name__)
+                await s.rollback()
+                continue
+            new_members = []
+            for member in _class.__members__.keys():
+                if hasattr(_class, "get"):
+                    member = _class.get(member)
+                    member = member.name
+                if member not in r:
+                    new_members.append(member)
+            if new_members != []:
+                for member in new_members:
+                    log.info("Extending %s with value %s", _class.__name__, member)
+                    await s.execute(sa.text("ALTER TYPE {} ADD VALUE '{}'".format(_class.__name__.lower(), member)))
+                await s.commit()
+    await s.close()
 
 
 class SQL:
