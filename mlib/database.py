@@ -58,6 +58,10 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
     async def by_name(cls: T, session: ASession, name: str) -> T | None:
         return await session.scalar(select(cls).filter_by(name=name))
 
+    @classmethod
+    async def get(cls: T, session: ASession, *args) -> T | None:
+        return await session.scalar(select(cls).filter(*args))
+
 
 class MappedWrapper:
     def __init_subclass__(cls, **kwargs) -> None:
