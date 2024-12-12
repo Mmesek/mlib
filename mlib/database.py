@@ -35,7 +35,9 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
         """Fetch from database or create new object"""
         if row := await session.scalar(select(cls).filter_by(**kwargs)):
             return row
-        return cls(**kwargs)
+        instance = cls(**kwargs)
+        session.add(instance)
+        return instance
 
     @classmethod
     async def filter(cls: T, session: ASession, *args, **kwargs) -> list[T]:
@@ -48,6 +50,8 @@ class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
         objects = []
         for id in ids:
             objects.append(await cls.fetch_or_add(session, id=id))
+        for obj in objects:
+            session.add(obj)
         return objects
 
     @classmethod
