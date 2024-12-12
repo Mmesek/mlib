@@ -25,7 +25,7 @@ class ASession(AsyncSession):
         return r.scalar()
 
 
-class Base(orm.MappedAsDataclass, orm.DeclarativeBase):
+class Base(orm.MappedAsDataclass, AsyncAttrs, orm.DeclarativeBase):
     @orm.declared_attr
     def __tablename__(cls):
         return cls.__name__
