@@ -42,7 +42,9 @@ class Base(orm.MappedAsDataclass, AsyncAttrs, orm.DeclarativeBase):
     @classmethod
     async def filter(cls: T, session: ASession, *args, **kwargs) -> list[T]:
         """:param kwargs: Column = Value"""
-        result = await session.scalars(select(cls).filter(*args).filter_by(**kwargs))
+        stmt = select(cls).filter(*args).filter_by(**kwargs)
+        log.log(5, "SQL Filter statement %s", stmt)
+        result = await session.scalars(stmt)
         return result.all()
 
     @classmethod
