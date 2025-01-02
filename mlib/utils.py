@@ -194,7 +194,7 @@ def unquote(my_str: str) -> str:
 
 import re
 
-NOT_WORD_OR_DIGIT = re.compile("\W|^(?=\d)")
+NOT_WORD_OR_DIGIT = re.compile(r"\W|^(?=\d)")
 def clean(my_str) -> str:
     """Replaces any non word characters or digits with underscore"""
     return NOT_WORD_OR_DIGIT.sub("_", my_str)
