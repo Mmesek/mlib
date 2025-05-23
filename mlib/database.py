@@ -7,7 +7,7 @@ import sqlalchemy as sa
 from sqlalchemy import Select, orm, select
 from sqlalchemy.exc import ProgrammingError
 from sqlalchemy.engine import Engine
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine, AsyncAttrs
 from sqlalchemy.sql.sqltypes import _type_map as SQL_TYPES
 from mlib.logger import log
 
