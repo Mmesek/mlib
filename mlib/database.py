@@ -25,6 +25,9 @@ class ASession(AsyncSession):
         return r.scalar()
 
 
+SCHEMAS = {}
+
+
 class Base(orm.MappedAsDataclass, AsyncAttrs, orm.DeclarativeBase):
     @orm.declared_attr
     def __tablename__(cls):
@@ -67,6 +70,14 @@ class Base(orm.MappedAsDataclass, AsyncAttrs, orm.DeclarativeBase):
     @classmethod
     async def get(cls: T, session: ASession, *args) -> T | None:
         return await session.scalar(select(cls).filter(*args))
+
+
+    def __init_subclass__(cls, schema: str = None, **kwargs):
+        if schema:
+            if schema not in SCHEMAS:
+                SCHEMAS[schema] = sa.MetaData(schema)
+            cls.metadata = SCHEMAS[schema]
+        return super().__init_subclass__(**kwargs)
 
 
 class MappedWrapper:
